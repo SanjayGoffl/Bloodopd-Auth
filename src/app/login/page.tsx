@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Droplets,
@@ -13,10 +13,9 @@ import {
   ChevronLeft,
   Activity,
 } from "lucide-react";
+import { loginAction, verifyMfaAction } from "./actions";
 
 type Step = "credentials" | "mfa";
-
-const MFA_ROLES = ["hod", "officer", "lab_tech"];
 
 const ROLE_LABELS: Record<string, string> = {
   hod: "Head of Department",
@@ -36,6 +35,7 @@ const DEMO_USERS = [
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   const [step, setStep] = useState<Step>("credentials");
   const [email, setEmail] = useState("");
@@ -43,7 +43,6 @@ export default function LoginPage() {
   const [totp, setTotp] = useState(["", "", "", "", "", ""]);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [pendingRole, setPendingRole] = useState("");
 
@@ -51,73 +50,53 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (step === "mfa") {
-      otpRefs.current[0]?.focus();
+      setTimeout(() => otpRefs.current[0]?.focus(), 50);
     }
   }, [step]);
 
-  async function handleCredentials(e: React.FormEvent) {
+  function handleCredentials(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
+    startTransition(async () => {
+      const result = await loginAction(email, password);
 
-      if (!res.ok) {
+      if (!result.ok) {
         setFailedAttempts((n) => n + 1);
-        setError(data.error || "Invalid credentials.");
-        setLoading(false);
+        setError(result.error);
         return;
       }
 
-      if (data.mfa_required) {
-        setPendingRole(data.role);
+      if (result.mfa_required) {
+        setPendingRole(result.role);
         setStep("mfa");
-        setLoading(false);
         return;
       }
 
-      // No MFA needed — session cookie already set by API
       router.push("/dashboard");
-    } catch {
-      setError("Network error. Please try again.");
-      setLoading(false);
-    }
+      router.refresh();
+    });
   }
 
-  async function handleMFA(e: React.FormEvent) {
+  function handleMFA(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
     const code = totp.join("");
 
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, totp: code }),
-      });
-      const data = await res.json();
+    startTransition(async () => {
+      const result = await verifyMfaAction(email, password, code);
 
-      if (!res.ok) {
-        setError(data.error || "Invalid verification code.");
+      if (!result.ok) {
+        setError(result.error);
         setTotp(["", "", "", "", "", ""]);
-        otpRefs.current[0]?.focus();
-        setLoading(false);
+        setTimeout(() => otpRefs.current[0]?.focus(), 50);
         return;
       }
 
       router.push("/dashboard");
-    } catch {
-      setError("Network error. Please try again.");
-      setLoading(false);
-    }
+      router.refresh();
+    });
   }
 
   function handleOtpChange(index: number, value: string) {
@@ -143,6 +122,7 @@ export default function LoginPage() {
   }
 
   const totpComplete = totp.every((d) => d !== "");
+  const loading = isPending;
 
   return (
     <div className="min-h-screen flex bg-slate-950">
@@ -173,12 +153,12 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Stat pills */}
+        {/* Feature pills */}
         <div className="relative z-10 space-y-3">
           {[
             { icon: ShieldCheck, label: "Dual-Operator Verification", sub: "Every issue requires two authorized staff" },
-            { icon: Activity, label: "Real-Time Haemovigilance", sub: "Adverse reactions tracked and reported" },
-            { icon: Lock, label: "Role-Based Access Control", sub: "5 clinical roles, strict permissions" },
+            { icon: Activity,    label: "Real-Time Haemovigilance",   sub: "Adverse reactions tracked and reported" },
+            { icon: Lock,        label: "Role-Based Access Control",   sub: "5 clinical roles, strict permissions" },
           ].map(({ icon: Icon, label, sub }) => (
             <div key={label} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-xl p-4">
               <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -192,7 +172,6 @@ export default function LoginPage() {
           ))}
         </div>
 
-        {/* Footer */}
         <div className="relative z-10 text-red-200/30 text-xs">
           VIT-TetherX &copy; 2026 &middot; Clinical Build
         </div>
@@ -204,7 +183,6 @@ export default function LoginPage() {
 
           {step === "credentials" ? (
             <>
-              {/* Header */}
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-6 lg:hidden">
                   <Droplets className="w-5 h-5 text-red-500" />
@@ -214,7 +192,6 @@ export default function LoginPage() {
                 <p className="text-slate-400 text-sm">Authorized hospital personnel only.</p>
               </div>
 
-              {/* Failed attempts warning */}
               {failedAttempts >= 3 && (
                 <div className="mb-5 flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
                   <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
@@ -242,7 +219,6 @@ export default function LoginPage() {
               </div>
 
               <form onSubmit={handleCredentials} className="space-y-4">
-                {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-1.5">
                     Hospital Email
@@ -258,7 +234,6 @@ export default function LoginPage() {
                   />
                 </div>
 
-                {/* Password */}
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-1.5">
                     Password
@@ -283,7 +258,6 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Error */}
                 {error && (
                   <div className="flex items-center gap-2 text-red-400 text-sm">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -291,7 +265,6 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                {/* Submit */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -312,14 +285,12 @@ export default function LoginPage() {
               </form>
 
               <p className="text-center text-xs text-slate-600 mt-6">
-                All access attempts are logged and audited.
-                <br />
+                All access attempts are logged and audited.<br />
                 Unauthorized access will be reported to compliance.
               </p>
             </>
           ) : (
             <>
-              {/* MFA step */}
               <div className="mb-8">
                 <button
                   onClick={() => { setStep("credentials"); setError(""); setTotp(["","","","","",""]); }}
@@ -332,13 +303,15 @@ export default function LoginPage() {
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-1">Two-Factor Verification</h2>
                 <p className="text-slate-400 text-sm">
-                  Required for <span className="text-white font-medium">{pendingRole ? ROLE_LABELS[pendingRole] : "your role"}</span>.
+                  Required for{" "}
+                  <span className="text-white font-medium">
+                    {pendingRole ? ROLE_LABELS[pendingRole] : "your role"}
+                  </span>.{" "}
                   Enter the 6-digit code from your authenticator app.
                 </p>
               </div>
 
               <form onSubmit={handleMFA} className="space-y-6">
-                {/* OTP inputs */}
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-3">
                     Verification Code
@@ -363,7 +336,6 @@ export default function LoginPage() {
                   </p>
                 </div>
 
-                {/* Error */}
                 {error && (
                   <div className="flex items-center gap-2 text-red-400 text-sm">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
