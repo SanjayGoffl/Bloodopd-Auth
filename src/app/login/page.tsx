@@ -23,14 +23,16 @@ const ROLE_LABELS: Record<string, string> = {
   lab_tech: "Laboratory Technician",
   clinician: "Clinician",
   nurse: "Nurse",
+  patient: "Patient",
 };
 
 const DEMO_USERS = [
-  { label: "HOD", email: "hod@hospital.in", color: "border-purple-500/50 text-purple-300 bg-purple-500/10" },
-  { label: "Officer", email: "officer@hospital.in", color: "border-blue-500/50 text-blue-300 bg-blue-500/10" },
-  { label: "Lab Tech", email: "labtech@hospital.in", color: "border-green-500/50 text-green-300 bg-green-500/10" },
-  { label: "Clinician", email: "clinician@hospital.in", color: "border-amber-500/50 text-amber-300 bg-amber-500/10" },
-  { label: "Nurse", email: "nurse@hospital.in", color: "border-pink-500/50 text-pink-300 bg-pink-500/10" },
+  { label: "HOD", email: "hod@hospital.in", color: "border-purple-400 text-purple-200 bg-purple-500/20" },
+  { label: "Officer", email: "officer@hospital.in", color: "border-blue-400 text-blue-200 bg-blue-500/20" },
+  { label: "Lab Tech", email: "labtech@hospital.in", color: "border-green-400 text-green-200 bg-green-500/20" },
+  { label: "Clinician", email: "clinician@hospital.in", color: "border-amber-400 text-amber-200 bg-amber-500/20" },
+  { label: "Nurse", email: "nurse@hospital.in", color: "border-pink-400 text-pink-200 bg-pink-500/20" },
+  { label: "Patient", email: "patient@hospital.in", color: "border-teal-400 text-teal-200 bg-teal-500/20" },
 ];
 
 export default function LoginPage() {
@@ -124,11 +126,11 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-col h-full w-full">
           {/* Logo & Top section */}
           <div className="mb-auto">
-            <div className="flex items-center gap-3 mb-12">
-              <div className="w-9 h-9 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/20">
+            <div className="flex items-center gap-3.5 mb-12">
+              <div className="w-10 h-10 flex-shrink-0 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/20">
                 <Droplets className="w-5 h-5 text-red-300" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-white font-bold tracking-wide text-sm">TETHERX</div>
                 <div className="text-red-300/70 text-xs tracking-widest uppercase">Blood Bank</div>
               </div>
@@ -147,7 +149,7 @@ export default function LoginPage() {
               {[
                 { icon: ShieldCheck, label: "Dual-Operator Verification", sub: "Every issue requires two authorized staff" },
                 { icon: Activity, label: "Real-Time Haemovigilance", sub: "Adverse reactions tracked and reported" },
-                { icon: Lock, label: "Role-Based Access Control", sub: "5 clinical roles, strict permissions" },
+                { icon: Lock, label: "Role-Based Access Control", sub: "6 clinical roles, strict permissions" },
               ].map(({ icon: Icon, label, sub }) => (
                 <div key={label} className="flex items-start gap-4 bg-white/5 border border-white/10 rounded-xl p-4 transition-colors hover:bg-white/10">
                   <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -208,9 +210,9 @@ export default function LoginPage() {
                         key={u.email}
                         type="button"
                         onClick={() => fillDemo(u.email)}
-                        className={`px-3 py-1.5 text-[11px] rounded-md border transition-all font-medium ${isSelected
-                          ? u.color
-                          : "text-slate-400 border-slate-800 bg-slate-900/50 hover:bg-slate-800 hover:text-slate-300 hover:border-slate-700"
+                        className={`px-3 py-1.5 text-[11px] rounded-lg border transition-all font-semibold ${isSelected
+                          ? u.color + " shadow-sm"
+                          : "text-slate-300 border-slate-700 bg-slate-800/60 hover:bg-slate-700 hover:text-white hover:border-slate-600"
                           }`}
                       >
                         {u.label}
