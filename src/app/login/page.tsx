@@ -117,52 +117,55 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex bg-slate-950 overflow-hidden">
       {/* Left panel — branding (hidden on small screens) */}
-      <div className="hidden lg:flex flex-col justify-between w-[42%] bg-gradient-to-b from-rose-950 via-red-900 to-slate-900 p-10 relative overflow-hidden flex-shrink-0">
+      <div className="hidden lg:flex w-[42%] bg-gradient-to-b from-rose-950 via-red-900 to-slate-900 p-12 relative overflow-hidden flex-shrink-0">
         <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-red-800/30 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-rose-900/20 blur-3xl pointer-events-none" />
 
-        {/* Logo */}
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-9 h-9 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/20">
-              <Droplets className="w-5 h-5 text-red-300" />
+        <div className="relative z-10 flex flex-col h-full w-full">
+          {/* Logo & Top section */}
+          <div className="mb-auto">
+            <div className="flex items-center gap-3 mb-12">
+              <div className="w-9 h-9 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/20">
+                <Droplets className="w-5 h-5 text-red-300" />
+              </div>
+              <div>
+                <div className="text-white font-bold tracking-wide text-sm">TETHERX</div>
+                <div className="text-red-300/70 text-xs tracking-widest uppercase">Blood Bank</div>
+              </div>
             </div>
-            <div>
-              <div className="text-white font-bold tracking-wide text-sm">TETHERX</div>
-              <div className="text-red-300/70 text-xs tracking-widest uppercase">Blood Bank</div>
+
+            <h1 className="text-4xl font-bold text-white leading-tight mb-4">
+              Transfusion<br />
+              <span className="text-red-300">Safety System</span>
+            </h1>
+            <p className="text-red-200/70 text-sm leading-relaxed max-w-sm mb-10">
+              A zero-trust clinical platform for blood bank management, dual-verification issue authorization, and haemovigilance.
+            </p>
+
+            {/* Feature pills */}
+            <div className="flex flex-col gap-4">
+              {[
+                { icon: ShieldCheck, label: "Dual-Operator Verification", sub: "Every issue requires two authorized staff" },
+                { icon: Activity, label: "Real-Time Haemovigilance", sub: "Adverse reactions tracked and reported" },
+                { icon: Lock, label: "Role-Based Access Control", sub: "5 clinical roles, strict permissions" },
+              ].map(({ icon: Icon, label, sub }) => (
+                <div key={label} className="flex items-start gap-4 bg-white/5 border border-white/10 rounded-xl p-4 transition-colors hover:bg-white/10">
+                  <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Icon className="w-4 h-4 text-red-300" />
+                  </div>
+                  <div>
+                    <div className="text-white text-sm font-medium">{label}</div>
+                    <div className="text-red-200/60 text-xs mt-1">{sub}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <h1 className="text-3xl font-bold text-white leading-tight mb-3">
-            Transfusion<br />
-            <span className="text-red-300">Safety System</span>
-          </h1>
-          <p className="text-red-200/60 text-sm leading-relaxed max-w-xs">
-            A zero-trust clinical platform for blood bank management, dual-verification issue authorization, and haemovigilance.
-          </p>
-        </div>
-
-        {/* Feature pills */}
-        <div className="relative z-10 space-y-2.5">
-          {[
-            { icon: ShieldCheck, label: "Dual-Operator Verification", sub: "Every issue requires two authorized staff" },
-            { icon: Activity, label: "Real-Time Haemovigilance", sub: "Adverse reactions tracked and reported" },
-            { icon: Lock, label: "Role-Based Access Control", sub: "5 clinical roles, strict permissions" },
-          ].map(({ icon: Icon, label, sub }) => (
-            <div key={label} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-xl p-3.5">
-              <div className="w-7 h-7 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Icon className="w-3.5 h-3.5 text-red-300" />
-              </div>
-              <div>
-                <div className="text-white text-xs font-medium">{label}</div>
-                <div className="text-red-200/50 text-xs mt-0.5">{sub}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="relative z-10 text-red-200/30 text-xs">
-          VIT-TetherX &copy; 2026 &middot; Clinical Build
+          {/* Footer */}
+          <div className="mt-auto text-red-200/30 text-xs font-medium tracking-wide">
+            VIT-TetherX &copy; 2026 &middot; Clinical Build
+          </div>
         </div>
       </div>
 
@@ -206,8 +209,8 @@ export default function LoginPage() {
                         type="button"
                         onClick={() => fillDemo(u.email)}
                         className={`px-3 py-1.5 text-[11px] rounded-md border transition-all font-medium ${isSelected
-                            ? u.color
-                            : "text-slate-400 border-slate-800 bg-slate-900/50 hover:bg-slate-800 hover:text-slate-300 hover:border-slate-700"
+                          ? u.color
+                          : "text-slate-400 border-slate-800 bg-slate-900/50 hover:bg-slate-800 hover:text-slate-300 hover:border-slate-700"
                           }`}
                       >
                         {u.label}
